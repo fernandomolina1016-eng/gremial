@@ -50,7 +50,7 @@ export default function BandejaPage() {
     return () => { supabase.removeChannel(channel) }
   }, [])
 
-  const openConsulta = async (consulta: Consulta) => {
+  const openConsulta = async (consulta: any) => {
     const isOpen = expanded === consulta.id
     setExpanded(isOpen ? null : consulta.id)
     if (!isOpen) {
