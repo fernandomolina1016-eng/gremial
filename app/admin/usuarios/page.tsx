@@ -15,6 +15,8 @@ export default function UsuariosPage() {
   const [search, setSearch] = useState('')
   const [currentUserId, setCurrentUserId] = useState<string>('')
   const supabase = createClient()
+  // Cast to any para evitar conflictos de tipos en mutaciones
+  const db = supabase as any
 
   const loadUsers = useCallback(async () => {
     setLoading(true)
@@ -43,7 +45,7 @@ export default function UsuariosPage() {
       return
     }
     const newRole = user.role === 'admin' ? 'afiliado' : 'admin'
-    const { error } = await supabase
+    const { error } = await db
       .from('profiles')
       .update({ role: newRole })
       .eq('id', user.id)
@@ -60,7 +62,7 @@ export default function UsuariosPage() {
       toast.error('No podés desactivar tu propia cuenta')
       return
     }
-    const { error } = await supabase
+    const { error } = await db
       .from('profiles')
       .update({ activo: !user.activo })
       .eq('id', user.id)
@@ -78,7 +80,7 @@ export default function UsuariosPage() {
       return
     }
     if (!confirm(`¿Eliminar a ${user.nombre} ${user.apellido}? Esta acción no se puede deshacer.`)) return
-    const { error } = await supabase.from('profiles').delete().eq('id', user.id)
+    const { error } = await db.from('profiles').delete().eq('id', user.id)
     if (error) {
       toast.error('Error al eliminar usuario')
     } else {
