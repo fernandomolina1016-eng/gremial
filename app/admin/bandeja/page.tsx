@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card, PageHeader, Badge, EmptyState, Spinner, Textarea, Select } from '@/components/ui'
+import { Card, PageHeader, Badge, EmptyState, Spinner, Textarea } from '@/components/ui'
 import { Button } from '@/components/ui/Button'
 import { formatDateTime } from '@/lib/utils'
 import { MessageSquare, Send, ChevronDown, ChevronUp } from 'lucide-react'
@@ -23,15 +23,15 @@ export default function BandejaPage() {
   const [adminId, setAdminId] = useState<string>('')
   const [filtroEstado, setFiltroEstado] = useState('todos')
   const supabase = createClient()
+  // Cast to any para evitar conflictos de tipos en .insert() y .update()
+  const db = supabase as any
 
   const loadConsultas = useCallback(async () => {
     setLoading(true)
-    const query = supabase
+    const { data } = await supabase
       .from('consultas')
       .select('*, afiliado:profiles(nombre, apellido, legajo, dependencia)')
       .order('created_at', { ascending: false })
-
-    const { data } = await query
     setConsultas(data ?? [])
     setLoading(false)
   }, [])
@@ -42,7 +42,6 @@ export default function BandejaPage() {
       if (user) setAdminId(user.id)
     })
 
-    // Realtime
     const channel = supabase
       .channel('bandeja-realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'consultas' }, loadConsultas)
@@ -54,12 +53,10 @@ export default function BandejaPage() {
     const isOpen = expanded === consulta.id
     setExpanded(isOpen ? null : consulta.id)
     if (!isOpen) {
-      // Marcar como leída
       if (!consulta.leida_admin) {
-        await supabase.from('consultas').update({ leida_admin: true }).eq('id', consulta.id)
+        await db.from('consultas').update({ leida_admin: true }).eq('id', consulta.id)
         loadConsultas()
       }
-      // Cargar respuestas
       const { data } = await supabase
         .from('respuestas_consultas')
         .select('*, admin:profiles(nombre, apellido)')
@@ -70,7 +67,7 @@ export default function BandejaPage() {
   }
 
   const changeEstado = async (id: string, estado: string) => {
-    const { error } = await supabase.from('consultas').update({ estado }).eq('id', id)
+    const { error } = await db.from('consultas').update({ estado }).eq('id', id)
     if (error) toast.error('Error al cambiar estado')
     else { toast.success('Estado actualizado'); loadConsultas() }
   }
@@ -78,7 +75,7 @@ export default function BandejaPage() {
   const enviarRespuesta = async (consultaId: string) => {
     if (!respuesta.trim()) return
     setSending(true)
-    const { error } = await supabase.from('respuestas_consultas').insert({
+    const { error } = await db.from('respuestas_consultas').insert({
       consulta_id: consultaId,
       admin_id: adminId,
       mensaje: respuesta.trim(),
@@ -87,7 +84,6 @@ export default function BandejaPage() {
       toast.error('Error al enviar respuesta')
     } else {
       setRespuesta('')
-      // Recargar respuestas
       const { data } = await supabase
         .from('respuestas_consultas')
         .select('*, admin:profiles(nombre, apellido)')
@@ -129,7 +125,6 @@ export default function BandejaPage() {
         <div className="space-y-3">
           {filtered.map(consulta => (
             <Card key={consulta.id} className={!consulta.leida_admin ? 'border-l-4 border-l-[#2563EB]' : ''}>
-              {/* Header de consulta */}
               <button
                 onClick={() => openConsulta(consulta)}
                 className="w-full flex items-start gap-4 p-5 text-left hover:bg-slate-50 transition-colors rounded-xl"
@@ -148,8 +143,8 @@ export default function BandejaPage() {
                     )}
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    {(consulta as any).afiliado?.nombre} {(consulta as any).afiliado?.apellido}
-                    {' '}· Legajo {(consulta as any).afiliado?.legajo}
+                    {consulta.afiliado?.nombre} {consulta.afiliado?.apellido}
+                    {' '}· Legajo {consulta.afiliado?.legajo}
                     {' '}· {formatDateTime(consulta.created_at)}
                   </p>
                 </div>
@@ -173,27 +168,23 @@ export default function BandejaPage() {
                 </div>
               </button>
 
-              {/* Contenido expandido */}
               {expanded === consulta.id && (
                 <div className="px-5 pb-5 border-t border-slate-100">
-                  {/* Mensaje original */}
                   <div className="mt-4 p-4 bg-slate-50 rounded-lg">
                     <p className="text-xs text-slate-500 mb-1 font-semibold uppercase tracking-wider">Mensaje del afiliado</p>
                     <p className="text-sm text-slate-700 leading-relaxed">{consulta.mensaje}</p>
                   </div>
 
-                  {/* Respuestas anteriores */}
                   {(respuestas[consulta.id] ?? []).map(resp => (
                     <div key={resp.id} className="mt-3 p-4 bg-[#DBEAFE] rounded-lg ml-8">
                       <p className="text-xs text-[#1a3a5c] font-semibold mb-1">
-                        Admin: {(resp as any).admin?.nombre} {(resp as any).admin?.apellido}
+                        Admin: {resp.admin?.nombre} {resp.admin?.apellido}
                         <span className="font-normal text-slate-500 ml-2">{formatDateTime(resp.created_at)}</span>
                       </p>
                       <p className="text-sm text-slate-700 leading-relaxed">{resp.mensaje}</p>
                     </div>
                   ))}
 
-                  {/* Nueva respuesta */}
                   <div className="mt-4">
                     <Textarea
                       placeholder="Escribí tu respuesta..."
