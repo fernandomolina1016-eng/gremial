@@ -15,12 +15,12 @@ export async function createClient() {
         set(name: string, value: string, options: object) {
           try {
             cookieStore.set({ name, value, ...options } as any)
-          } catch { /* Server Component */ }
+          } catch { }
         },
         remove(name: string, options: object) {
           try {
             cookieStore.set({ name, value: '', ...options } as any)
-          } catch { /* Server Component */ }
+          } catch { }
         },
       },
     }
