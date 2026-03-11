@@ -4,18 +4,24 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
+  // Usamos la API de cookie individual (get/set/remove) que es estable en todas las versiones de @supabase/ssr
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll: () => request.cookies.getAll(),
-        setAll: (cookiesToSet: Array<{ name: string; value: string; options?: object }>) => {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: object) {
+          request.cookies.set({ name, value, ...options } as any)
           supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options as any)
-          )
+          supabaseResponse.cookies.set({ name, value, ...options } as any)
+        },
+        remove(name: string, options: object) {
+          request.cookies.set({ name, value: '', ...options } as any)
+          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse.cookies.set({ name, value: '', ...options } as any)
         },
       },
     }
