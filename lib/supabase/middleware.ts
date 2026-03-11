@@ -1,10 +1,10 @@
-import { createServerClient, type CookieMethodsServer } from '@supabase/ssr'
+import { createServerClient, type CookieMethods } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
-  const cookieMethods: CookieMethodsServer = {
+  const cookieMethods: CookieMethods = {
     getAll() {
       return request.cookies.getAll()
     },
