@@ -37,7 +37,6 @@ export default function MisConsultasPage() {
       }
     })
 
-    // Realtime: notificar cuando llega respuesta
     const channel = supabase
       .channel('mis-respuestas')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'respuestas_consultas' },
@@ -67,8 +66,10 @@ export default function MisConsultasPage() {
       return
     }
     setSending(true)
-    const { error } = await supabase.from('consultas').insert({
-      tipo: form.tipo as 'consulta' | 'sugerencia',
+    // Cast to any para evitar conflicto de tipos con el cliente tipado de Supabase
+    const db = supabase as any
+    const { error } = await db.from('consultas').insert({
+      tipo: form.tipo,
       asunto: form.asunto,
       mensaje: form.mensaje,
       afiliado_id: userId,
@@ -95,7 +96,6 @@ export default function MisConsultasPage() {
         </Button>
       </PageHeader>
 
-      {/* Formulario */}
       {showForm && (
         <Card className="p-6 mb-6 animate-slide-up">
           <h3 className="font-bold text-[#1a3a5c] mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
@@ -138,7 +138,6 @@ export default function MisConsultasPage() {
         </Card>
       )}
 
-      {/* Lista */}
       {loading ? (
         <Spinner />
       ) : consultas.length === 0 ? (
@@ -151,7 +150,6 @@ export default function MisConsultasPage() {
         <div className="space-y-3">
           {consultas.map(consulta => {
             const estadoConfig = getEstadoConfig(consulta.estado)
-            const tieneRespuestas = (respuestas[consulta.id] ?? []).length > 0
             return (
               <Card key={consulta.id}>
                 <button
