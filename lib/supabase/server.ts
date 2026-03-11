@@ -1,8 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-// Sin el tipo Database para evitar que TypeScript resuelva las tablas como 'never'
-// cuando el schema no matchea exactamente. Las queries siguen funcionando igual.
 export async function createClient() {
   const cookieStore = await cookies()
 
@@ -11,16 +9,14 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
+        getAll: () => cookieStore.getAll(),
+        setAll: (cookiesToSet: Array<{ name: string; value: string; options?: object }>) => {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options as any)
             )
           } catch {
-            // setAll called from Server Component — ignorar
+            // setAll llamado desde Server Component — ignorar
           }
         },
       },
