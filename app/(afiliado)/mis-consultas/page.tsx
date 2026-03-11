@@ -7,10 +7,9 @@ import { Input } from '@/components/ui/Input'
 import { formatDateTime, getEstadoConfig } from '@/lib/utils'
 import { Plus, X, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react'
 import toast from 'react-hot-toast'
-import type { Consulta } from '@/types/database'
 
 export default function MisConsultasPage() {
-  const [consultas, setConsultas] = useState<Consulta[]>([])
+  const [consultas, setConsultas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/Button'
 import { formatDateTime } from '@/lib/utils'
 import { MessageSquare, Send, ChevronDown, ChevronUp } from 'lucide-react'
 import toast from 'react-hot-toast'
-import type { Consulta, RespuestaConsulta } from '@/types/database'
 
 const ESTADOS = [
   { value: 'Recibida',    label: 'Recibida' },
@@ -15,10 +14,10 @@ const ESTADOS = [
 ]
 
 export default function BandejaPage() {
-  const [consultas, setConsultas] = useState<Consulta[]>([])
+  const [consultas, setConsultas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState<string | null>(null)
-  const [respuestas, setRespuestas] = useState<Record<string, RespuestaConsulta[]>>({})
+  const [respuestas, setRespuestas] = useState<Record<string, any[]>>({})
   const [respuesta, setRespuesta] = useState('')
   const [sending, setSending] = useState(false)
   const [adminId, setAdminId] = useState<string>('')

@@ -134,59 +134,243 @@ export interface Contacto {
 }
 
 // ── Supabase Database type (para el cliente tipado) ──────────
+// IMPORTANTE: Los tipos Insert/Update deben ser tipos planos (sin joins opcionales).
+// Supabase los usa internamente para validar los parámetros de .insert() y .update().
 
 export interface Database {
   public: {
     Tables: {
       profiles: {
         Row: Profile
-        Insert: Omit<Profile, 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Profile, 'id' | 'created_at'>>
+        Insert: {
+          id: string
+          nombre: string
+          apellido: string
+          legajo: string
+          dependencia: string
+          celular: string
+          email: string
+          role?: UserRole
+          activo?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          nombre?: string
+          apellido?: string
+          legajo?: string
+          dependencia?: string
+          celular?: string
+          email?: string
+          role?: UserRole
+          activo?: boolean
+          updated_at?: string
+        }
       }
       comunicados: {
         Row: Comunicado
-        Insert: Omit<Comunicado, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Comunicado, 'id' | 'created_at'>>
+        Insert: {
+          id?: string
+          titulo: string
+          resumen: string
+          imagen_url?: string | null
+          documento_url?: string | null
+          documento_nombre?: string | null
+          es_publico?: boolean
+          publicado?: boolean
+          autor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          titulo?: string
+          resumen?: string
+          imagen_url?: string | null
+          documento_url?: string | null
+          documento_nombre?: string | null
+          es_publico?: boolean
+          publicado?: boolean
+          autor_id?: string | null
+          updated_at?: string
+        }
       }
       eventos_calendario: {
         Row: EventoCalendario
-        Insert: Omit<EventoCalendario, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<EventoCalendario, 'id' | 'created_at'>>
+        Insert: {
+          id?: string
+          titulo: string
+          descripcion?: string | null
+          fecha_inicio: string
+          fecha_fin?: string | null
+          lugar?: string | null
+          color?: string
+          autor_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          titulo?: string
+          descripcion?: string | null
+          fecha_inicio?: string
+          fecha_fin?: string | null
+          lugar?: string | null
+          color?: string
+          autor_id?: string | null
+          updated_at?: string
+        }
       }
       consultas: {
-        Row: Consulta
-        Insert: Omit<Consulta, 'id' | 'created_at' | 'updated_at' | 'afiliado' | 'respuestas'>
-        Update: Partial<Omit<Consulta, 'id' | 'created_at' | 'afiliado' | 'respuestas'>>
+        Row: {
+          id: string
+          tipo: ConsultaTipo
+          asunto: string
+          mensaje: string
+          estado: ConsultaEstado
+          afiliado_id: string
+          leida_admin: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tipo?: ConsultaTipo
+          asunto: string
+          mensaje: string
+          estado?: ConsultaEstado
+          afiliado_id: string
+          leida_admin?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          tipo?: ConsultaTipo
+          asunto?: string
+          mensaje?: string
+          estado?: ConsultaEstado
+          afiliado_id?: string
+          leida_admin?: boolean
+          updated_at?: string
+        }
       }
       respuestas_consultas: {
-        Row: RespuestaConsulta
-        Insert: Omit<RespuestaConsulta, 'id' | 'created_at' | 'admin'>
-        Update: Partial<Omit<RespuestaConsulta, 'id' | 'created_at'>>
+        Row: {
+          id: string
+          consulta_id: string
+          admin_id: string
+          mensaje: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          consulta_id: string
+          admin_id: string
+          mensaje: string
+          created_at?: string
+        }
+        Update: {
+          mensaje?: string
+        }
       }
       institucional_secciones: {
         Row: InstitucionalSeccion
-        Insert: Omit<InstitucionalSeccion, 'id' | 'updated_at'>
-        Update: Partial<Omit<InstitucionalSeccion, 'id'>>
+        Insert: {
+          id?: string
+          slug: string
+          titulo: string
+          contenido?: string
+          orden?: number
+          activo?: boolean
+          updated_at?: string
+        }
+        Update: {
+          slug?: string
+          titulo?: string
+          contenido?: string
+          orden?: number
+          activo?: boolean
+          updated_at?: string
+        }
       }
       autoridades: {
         Row: Autoridad
-        Insert: Omit<Autoridad, 'id' | 'created_at'>
-        Update: Partial<Omit<Autoridad, 'id' | 'created_at'>>
+        Insert: {
+          id?: string
+          nombre: string
+          cargo: string
+          foto_url?: string | null
+          orden?: number
+          activo?: boolean
+          created_at?: string
+        }
+        Update: {
+          nombre?: string
+          cargo?: string
+          foto_url?: string | null
+          orden?: number
+          activo?: boolean
+        }
       }
       documentos_legales: {
         Row: DocumentoLegal
-        Insert: Omit<DocumentoLegal, 'id' | 'created_at'>
-        Update: Partial<Omit<DocumentoLegal, 'id' | 'created_at'>>
+        Insert: {
+          id?: string
+          titulo: string
+          descripcion?: string | null
+          archivo_url: string
+          categoria?: DocumentoCategoria
+          activo?: boolean
+          created_at?: string
+        }
+        Update: {
+          titulo?: string
+          descripcion?: string | null
+          archivo_url?: string
+          categoria?: DocumentoCategoria
+          activo?: boolean
+        }
       }
       acuerdos: {
         Row: Acuerdo
-        Insert: Omit<Acuerdo, 'id' | 'created_at'>
-        Update: Partial<Omit<Acuerdo, 'id' | 'created_at'>>
+        Insert: {
+          id?: string
+          titulo: string
+          descripcion?: string | null
+          archivo_url: string
+          tipo?: AcuerdoTipo
+          anio?: number | null
+          activo?: boolean
+          autor_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          titulo?: string
+          descripcion?: string | null
+          archivo_url?: string
+          tipo?: AcuerdoTipo
+          anio?: number | null
+          activo?: boolean
+          autor_id?: string | null
+        }
       }
       contacto: {
         Row: Contacto
-        Insert: Omit<Contacto, 'id' | 'updated_at'>
-        Update: Partial<Omit<Contacto, 'id'>>
+        Insert: {
+          id?: string
+          direccion?: string | null
+          telefono?: string | null
+          email?: string | null
+          horarios?: string | null
+          mapa_embed?: string | null
+          updated_at?: string
+        }
+        Update: {
+          direccion?: string | null
+          telefono?: string | null
+          email?: string | null
+          horarios?: string | null
+          mapa_embed?: string | null
+          updated_at?: string
+        }
       }
     }
     Functions: {
